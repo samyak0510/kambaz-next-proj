@@ -1,9 +1,31 @@
 "use client";
+import Link from "next/link";
 
 export default function Lab1() {
     return (
         <div id="wd-lab1">
             <h2>Lab 1</h2>
+            <section id="wd-lab1-landing" style={{ marginBottom: 24 }}>
+                <h3>CS5610 Lab 1 - Landing</h3>
+                <p><strong>Name:</strong> Samyak Shah</p>
+                <p><strong>NUID:</strong> 002051486</p>
+                <p><strong>Section:</strong> CS5610</p>
+                <div>
+                    <h4>Lab Assignments</h4>
+                    <ul>
+                        <li><Link href="/Labs/Lab1">Lab 1</Link></li>
+                        <li><Link href="/Labs/Lab2">Lab 2</Link></li>
+                        <li><Link href="/Labs/Lab3">Lab 3</Link></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Links</h4>
+                    <ul>
+                        <li><Link href="/Dashboard">Kambaz Application</Link></li>
+                        <li><a href="https://github.com/samyak0510/kambaz-next-js" target="_blank" rel="noopener noreferrer">Source Code Repository</a></li>
+                    </ul>
+                </div>
+            </section>
             <h3>HTML Examples</h3>
             <div id="wd-h-tag">
                 <h4>Heading Tags</h4>
@@ -12,7 +34,6 @@ export default function Lab1() {
             {/* do the next exercise here */}
             <div id="wd-p-tag">
                 <h4>Paragraph Tag</h4>
-                <p id="wd-p-1"> ... </p>
                 <p id="wd-p-2">
                     This is the first paragraph. The paragraph tag is used to format
                     vertical gaps between long pieces of text like this one.
@@ -180,8 +201,7 @@ export default function Lab1() {
             </div>
             <h5>Text boxes</h5>
             <label>Biography:</label><br />
-            <textarea id="wd-textarea" cols={30} rows={10} defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-            />
+            <textarea id="wd-textarea" cols={30} rows={10} defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." />
 
             <h5 id="wd-buttons">Buttons</h5>
             <button type="button"
