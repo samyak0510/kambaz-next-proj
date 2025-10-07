@@ -13,6 +13,12 @@ import Flex from "./Flex";
 import ReactIconsSampler from "./ReactIcons";
 import { Container } from "react-bootstrap";
 import Bootstrapfunc from "./BootstrapGrids";
+import ScreenSizeLabel from "./ScreenSizeLabel";
+import BootstrapTables from "./BootstrapTables";
+import BootstrapLists from "./BootstrapLists";
+import BootstrapListClient from "./BootstrapListClient";
+import BoostrapForms from "./BootstrapForms";
+import BootstrapNav from "./BootstrapNavigation";
 
 
 export default function Lab2() {
@@ -86,6 +92,12 @@ export default function Lab2() {
       <Flex />
       <ReactIconsSampler />
       <Bootstrapfunc/>
+      <ScreenSizeLabel/>
+      <BootstrapTables/>
+      <BootstrapLists/>
+      <BootstrapListClient/>
+      <BoostrapForms/>
+      <BootstrapNav/>
 
     </Container>
 
