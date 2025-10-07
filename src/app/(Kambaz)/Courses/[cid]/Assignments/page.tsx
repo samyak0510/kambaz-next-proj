@@ -1,51 +1,130 @@
+"use client";
+
 import Link from "next/link";
+import { Button, InputGroup, FormControl, ListGroup, ListGroupItem, Badge } from "react-bootstrap";
+import { IoSearchOutline, IoEllipsisVertical } from "react-icons/io5";
+import { FaPlus, FaCheckCircle } from "react-icons/fa";
+import { BsGripVertical } from "react-icons/bs";
+import { HiOutlineDocumentText } from "react-icons/hi";
 
 export default function Assignments() {
   return (
-    <div id="wd-assignments">
-      <input placeholder="Search for Assignments"
-        id="wd-search-assignment" />
-      <button id="wd-add-assignment-group">+ Group</button>
-      <button id="wd-add-assignment">+ Assignment</button>
-      <h3 id="wd-assignments-title">
-        ASSIGNMENTS 40% of Total <button>+</button> </h3>
-      <ul id="wd-assignment-list">
-        <li className="wd-assignment-list-item">
-          <Link href="/Courses/1234/Assignments/123"
-            className="wd-assignment-link" >
-            A1 - ENV + HTML
-          </Link> 
-        <p>
-          Multiple Modules | <b>Not available until</b> May 6 at 12:00am |{" "}
-          <b>Due</b> May 13 at 11:59pm | 100 pts
-        </p>
-        </li>
-        <li className="wd-assignment-list-item">
-          <Link
-            href="/Courses/1234/Assignments/234"
-            className="wd-assignment-link"
-          >
-            A2 - CSS + BOOTSTRAP
-          </Link>
-          <p>
-            Multiple Modules | <b>Not available until</b> May 13 at 12:00am |{" "}
-            <b>Due</b> May 20 at 11:59pm | 100 pts
-          </p>
-        </li>
+    <div id="wd-assignments" className="p-3">
+      <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div style={{ maxWidth: 480 }} className="flex-grow-1">
+          <InputGroup>
+            <InputGroup.Text>
+              <IoSearchOutline />
+            </InputGroup.Text>
+            <FormControl id="wd-search-assignment" placeholder="Search for Assignment" />
+          </InputGroup>
+        </div>
 
-        <li className="wd-assignment-list-item">
-          <Link
-            href="/Courses/1234/Assignments/345"
-            className="wd-assignment-link"
-          >
-            A3 - JAVASCRIPT + REACT
-          </Link>
-          <p>
-            Multiple Modules | <b>Not available until</b> May 20 at 12:00am |{" "}
-            <b>Due</b> May 27 at 11:59pm | 100 pts
-          </p>
-        </li>
-      </ul>
+        <div className="ms-auto d-flex align-items-center gap-2">
+          <Button id="wd-add-assignment-group" variant="secondary">
+            <FaPlus className="me-2" />
+            Group
+          </Button>
+          <Button id="wd-add-assignment" variant="danger">
+            <FaPlus className="me-2" />
+            Assignment
+          </Button>
+        </div>
+      </div>
+
+      <ListGroup className="rounded-0">
+        <ListGroupItem className="p-0 mb-4 fs-5 border-gray">
+          <div className="p-3 ps-2 bg-secondary d-flex align-items-center">
+            <BsGripVertical className="me-2 fs-3" />
+            <span className="text-uppercase fw-semibold">Assignments</span>
+            <div className="ms-auto d-flex align-items-center gap-2">
+              <Badge bg="light" text="dark" className="px-3 py-2 fw-normal">40% of Total</Badge>
+              <Button variant="light" size="sm" className="border"><FaPlus /></Button>
+              <Button variant="light" size="sm" className="border"><IoEllipsisVertical /></Button>
+            </div>
+          </div>
+
+          <ListGroup className="rounded-0">
+            <ListGroupItem className="p-3 ps-2 border-0 border-start border-4 border-success">
+              <div className="d-flex align-items-start gap-2">
+                <BsGripVertical className="fs-4 mt-1" />
+                <HiOutlineDocumentText className="text-success fs-4 mt-1" />
+                <div className="flex-fill">
+                  <Link href="/Courses/1234/Assignments/123" className="text-decoration-none text-dark">
+                    A1 - ENV + HTML
+                  </Link>
+                  <div className="text-muted">
+                    <span>Multiple Modules</span>
+                    <span className="mx-2">|</span>
+                    <span><span className="fw-semibold">Not available until</span> May 6 at 12:00am</span>
+                  </div>
+                  <div className="text-muted">
+                    <span><span className="fw-semibold">Due</span> May 13 at 11:59pm</span>
+                    <span className="mx-2">|</span>
+                    <span>100 pts</span>
+                  </div>
+                </div>
+                <div className="text-muted">
+                  <FaCheckCircle className="text-success me-2" />
+                  <IoEllipsisVertical className="fs-5" />
+                </div>
+              </div>
+            </ListGroupItem>
+
+            <ListGroupItem className="p-3 ps-2 border-0 border-start border-4 border-success">
+              <div className="d-flex align-items-start gap-2">
+                <BsGripVertical className="fs-4 mt-1" />
+                <HiOutlineDocumentText className="text-success fs-4 mt-1" />
+                <div className="flex-fill">
+                  <Link href="/Courses/1234/Assignments/234" className="text-decoration-none text-dark">
+                    A2 - CSS + BOOTSTRAP
+                  </Link>
+                  <div className="text-muted">
+                    <span>Multiple Modules</span>
+                    <span className="mx-2">|</span>
+                    <span><span className="fw-semibold">Not available until</span> May 13 at 12:00am</span>
+                  </div>
+                  <div className="text-muted">
+                    <span><span className="fw-semibold">Due</span> May 20 at 11:59pm</span>
+                    <span className="mx-2">|</span>
+                    <span>100 pts</span>
+                  </div>
+                </div>
+                <div className="text-muted">
+                  <FaCheckCircle className="text-success me-2" />
+                  <IoEllipsisVertical className="fs-5" />
+                </div>
+              </div>
+            </ListGroupItem>
+
+            <ListGroupItem className="p-3 ps-2 border-0 border-start border-4 border-success">
+              <div className="d-flex align-items-start gap-2">
+                <BsGripVertical className="fs-4 mt-1" />
+                <HiOutlineDocumentText className="text-success fs-4 mt-1" />
+                <div className="flex-fill">
+                  <Link href="/Courses/1234/Assignments/345" className="text-decoration-none text-dark">
+                    A3 - JAVASCRIPT + REACT
+                  </Link>
+                  <div className="text-muted">
+                    <span>Multiple Modules</span>
+                    <span className="mx-2">|</span>
+                    <span><span className="fw-semibold">Not available until</span> May 20 at 12:00am</span>
+                  </div>
+                  <div className="text-muted">
+                    <span><span className="fw-semibold">Due</span> May 27 at 11:59pm</span>
+                    <span className="mx-2">|</span>
+                    <span>100 pts</span>
+                  </div>
+                </div>
+                <div className="text-muted">
+                  <FaCheckCircle className="text-success me-2" />
+                  <IoEllipsisVertical className="fs-5" />
+                </div>
+              </div>
+            </ListGroupItem>
+          </ListGroup>
+        </ListGroupItem>
+      </ListGroup>
     </div>
   );
 }
