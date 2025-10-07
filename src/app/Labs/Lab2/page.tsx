@@ -1,4 +1,16 @@
 import "./index.css"
+import ForegroundColors from "./Foreground";
+import BackgroundColors from "./BackgroundColors";
+import Borders from "./Borders";
+import Padding from "./Padding";
+import Margins from "./Margins";
+import Corners from "./Corners";
+import Dimension from "./Dimensions";
+import Postion from "./Positions";
+import Float from "./Float";
+import GridLayout from "./GridLayout";
+import Flex from "./Flex";
+
 export default function Lab2() {
   return (
     <div id="wd-lab2">
@@ -55,7 +67,17 @@ export default function Lab2() {
           </div>
         </div>
       </div>
-
+      <ForegroundColors/>
+      <BackgroundColors/>
+      <Borders/>
+      <Padding/>
+      <Margins/>
+      <Corners/>
+      <Dimension/>
+      <Postion/>
+      <Float/>
+      <GridLayout/>
+      <Flex/>
 
     </div>);
 }
