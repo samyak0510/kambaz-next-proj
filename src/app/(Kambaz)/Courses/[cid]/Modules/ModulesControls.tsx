@@ -1,6 +1,7 @@
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa6";
 import GreenCheckmark from "./GreenCheckmark";
+import { MdDoNotDisturbAlt } from "react-icons/md";
 export default function ModulesControls() {
     return (
         <div id="wd-modules-controls" className="text-nowrap clearfix">
@@ -40,11 +41,11 @@ export default function ModulesControls() {
 
                     {/* Required extra items */}
                     <DropdownItem id="wd-unpublish-all-modules-and-items">
-                        <GreenCheckmark /> Unpublish all modules and items
+                        <MdDoNotDisturbAlt className="me-2 fs-5" /> Unpublish all modules and items
                     </DropdownItem>
 
                     <DropdownItem id="wd-unpublish-modules-only">
-                        <GreenCheckmark /> Unpublish modules only
+                        <MdDoNotDisturbAlt className="me-2 fs-5" /> Unpublish modules only
                     </DropdownItem>
                 </DropdownMenu>
             </Dropdown>
