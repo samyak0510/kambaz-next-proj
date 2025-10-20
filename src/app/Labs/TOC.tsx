@@ -1,28 +1,33 @@
+"use client";
+
 import Link from "next/link";
-import { Button, Card, CardBody, CardImg, CardText, CardTitle, Nav, NavItem, NavLink } from "react-bootstrap";
+import { Nav, NavItem, NavLink } from "react-bootstrap";
+import { usePathname } from "next/navigation";
 export default function TOC() {
+  const pathname = usePathname();
   return (
 
-      <Nav variant="pills">
-        <NavItem>
-          <NavLink href="/Labs" as={Link}>Labs</NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink href="/Labs/Lab1" as={Link}>Lab 1</NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink href="/Labs/Lab2" as={Link}>Lab 2</NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink href="/Labs/Lab3" as={Link}>Lab 3</NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink href="/Dashboard" as={Link}>Kambaz</NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink href="https://github.com/samyak0510">My GitHub</NavLink>
-        </NavItem>
-      </Nav>
+    <Nav variant="pills">
+      <NavItem>
+        <NavLink href="/Labs" as={Link} className={`nav-link ${pathname.endsWith("Labs") ? "active" : ""}`}>
+          Labs </NavLink> </NavItem>
+      <NavItem>
+        <NavLink href="/Labs/Lab1" as={Link} className={`nav-link ${pathname.endsWith("Lab1") ? "active" : ""}`}>
+          Lab 1 </NavLink> </NavItem>
+      <NavItem>
+        <NavLink href="/Labs/Lab2" as={Link} className={`nav-link ${pathname.endsWith("Lab2") ? "active" : ""}`}>
+          Lab 2 </NavLink> </NavItem>
+      <NavItem>
+        <NavLink href="/Labs/Lab3" as={Link} className={`nav-link ${pathname.endsWith("Lab3") ? "active" : ""}`}>
+          Lab 3 </NavLink> </NavItem>
+
+      <NavItem>
+        <NavLink href="/Dashboard" as={Link}>Kambaz</NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink href="https://github.com/samyak0510">My GitHub</NavLink>
+      </NavItem>
+    </Nav>
 
 
 
