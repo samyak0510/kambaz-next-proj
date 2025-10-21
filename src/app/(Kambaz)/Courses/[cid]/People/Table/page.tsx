@@ -5,10 +5,32 @@ import { Table } from "react-bootstrap";
 import { FaUserCircle } from "react-icons/fa";
 import * as db from "../../../../Database";
 
+type User = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  loginId: string;
+  section: string;
+  role: string;
+  lastActivity: string;
+  totalActivity: string | number;
+};
+
+type Enrollment = {
+  _id: string;
+  user: string;     
+  course: string;
+};
+
+type Database = {
+  users: User[];
+  enrollments: Enrollment[];
+};
 
 export default function PeopleTable() {
-    const { cid } = useParams();
-    const { users, enrollments} = db;
+  const { cid } = useParams<{ cid: string }>();
+  const { users, enrollments } = db as Database;
+
     return (
         <div id="wd-people-table">
             <Table striped>
@@ -23,7 +45,7 @@ export default function PeopleTable() {
                         .filter((usr) =>
                             enrollments.some((enrollment) => enrollment.user === usr._id && enrollment.course === cid)
                         )
-                        .map((user: any) => (
+                        .map((user) => (
                             <tr key={user._id}>
                                 <td className="wd-full-name text-nowrap">
                                     <FaUserCircle className="me-2 fs-1 text-secondary" />
