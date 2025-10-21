@@ -5,15 +5,24 @@ import FormLabel from "react-bootstrap/FormLabel";
 import FormControl from "react-bootstrap/FormControl";
 import FormSelect from "react-bootstrap/FormSelect";
 import FormCheck from "react-bootstrap/FormCheck";
-import Button from "react-bootstrap/Button";
+import { useParams } from "next/navigation";
+import * as db from "../../../../Database";
+import Link from "next/link";
 
 export default function AssignmentEditor() {
+  const { cid, aid } = useParams();
+  const assignment = db.assignment.find((a: any) => a._id === aid);
+
+  if (!assignment) {
+    return <div className="p-4 text-danger">Assignment not found.</div>;
+  }
+
   return (
     <div id="wd-assignments-editor" className="p-3">
       <Form>
         <div className="mb-3">
           <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
-          <FormControl id="wd-name" defaultValue="A1 - ENV + HTML" />
+          <FormControl id="wd-name" defaultValue={assignment.title} />
         </div>
 
         <div className="mb-4">
@@ -88,10 +97,14 @@ export default function AssignmentEditor() {
           </div>
         </div>
 
-        <div className="d-flex justify-content-end gap-2">
-          <Button type="button" variant="light" className="border">Cancel</Button>
-          <Button type="submit" variant="danger">Save</Button>
-        </div>
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <Link href={`/Courses/${cid}/Assignments`} className="btn btn-light">
+              Cancel
+            </Link>
+            <Link href={`/Courses/${cid}/Assignments`} className="btn btn-danger">
+              Save
+            </Link>
+          </div>
       </Form>
     </div>
   );
