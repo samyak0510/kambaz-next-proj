@@ -9,9 +9,17 @@ import { useParams } from "next/navigation";
 import * as db from "../../../../Database";
 import Link from "next/link";
 
+
+type Assignment = {
+  _id: string;
+  title: string;
+};
+
+
+
 export default function AssignmentEditor() {
-  const { cid, aid } = useParams();
-  const assignment = db.assignment.find((a: any) => a._id === aid);
+  const { cid, aid } = useParams<{ cid: string; aid: string }>();
+  const assignment = (db as any).assignment.find((a: Assignment) => a._id === aid);
 
   if (!assignment) {
     return <div className="p-4 text-danger">Assignment not found.</div>;
