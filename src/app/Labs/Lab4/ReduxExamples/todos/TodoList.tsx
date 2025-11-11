@@ -12,6 +12,7 @@ export default function TodoList() {
         <TodoForm key={"td-item-1"} />
         {todos.map((todo: any) => (
           <TodoItem
+          key={todo.id} 
           todo={todo}
            />
         ))}
