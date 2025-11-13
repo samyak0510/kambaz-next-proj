@@ -1,122 +1,178 @@
 "use client";
-
-import Form from "react-bootstrap/Form";
-import FormLabel from "react-bootstrap/FormLabel";
-import FormControl from "react-bootstrap/FormControl";
-import FormSelect from "react-bootstrap/FormSelect";
-import FormCheck from "react-bootstrap/FormCheck";
-import { useParams } from "next/navigation";
-import * as db from "../../../../Database";
-import Link from "next/link";
-
-type Assignment = {
-  _id: string;
-  title: string;
-};
-
-type Database = {
-  assignment: Assignment[];
-};
+import { useParams, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { addAssignment, updateAssignment } from "../reducer";
+import * as db from "../../../../Database/"; 
+import {
+  Form,
+  Row,
+  Col,
+  Card,
+  FormLabel,
+  FormControl,
+  FormSelect,
+  FormCheck,
+  CardBody,
+} from "react-bootstrap";
+import { useRef } from "react";
 
 export default function AssignmentEditor() {
-  const { cid, aid } = useParams<{ cid: string; aid: string }>();
-
-  const assignments = (db as Database).assignment;
-  const assignment = assignments.find((a) => a._id === aid);
-
-  if (!assignment) {
+  const { cid, aid } = useParams();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { assignments } = useSelector((state: any) => state.assignmentReducer);
+  const assignment = aid !== "new" ? assignments.find((a: any) => a._id === aid) : null;
+  if (aid !== "new" && !assignment) {
     return <div className="p-4 text-danger">Assignment not found.</div>;
   }
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const pointsRef = useRef<HTMLInputElement>(null);
+  const dueRef = useRef<HTMLInputElement>(null);
+  const availableFromRef = useRef<HTMLInputElement>(null);
+  const availableUntilRef = useRef<HTMLInputElement>(null);
+  const handleCancel = () => {
+    router.push(`/Courses/${cid}/Assignments`);
+  };
+  const handleSave = () => {
+    const title = nameRef.current?.value || "new assignment";
+    dispatch(
+      addAssignment({
+        title, 
+        cid
+      })
+    )
+    router.push(`/Courses/${cid}/Assignments`);
+  };
 
   return (
-    <div id="wd-assignments-editor" className="p-3">
-      <Form>
-        <div className="mb-3">
-          <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
-          <FormControl id="wd-name" defaultValue={assignment.title} />
-        </div>
+    <div id="wd-assignments-editor" className="container-fluid">
+      <Card className="border-0">
+        <CardBody className="p-4">
+          <Form className="mb-3" id="wd-name">
+            <FormLabel>Assignment Name</FormLabel>
+            <FormControl
+              type="text"
+              defaultValue={assignment ? assignment.title : ""}
+              ref={nameRef}
+            />
+          </Form>
+          <Form className="mb-4" id="wd-description">
+            <FormControl
+              as="textarea"
+              rows={15}
+              defaultValue={
+                "The assignment is available online. Submit a link to the landing page of your web application."
+              }
+              ref={descriptionRef}
+            />
+          </Form>
+          <Row className="g-3 align-items-start mb-3">
+            <Col sm={3} className="text-sm-end">
+              <FormLabel className="mt-1" htmlFor="wd-points">
+                Points
+              </FormLabel>
+            </Col>
+            <Col sm={9}>
+              <FormControl id="wd-points" type="number" defaultValue={100} ref={pointsRef} />
+            </Col>
+          </Row>
+          <Row className="g-3 align-items-start mb-3">
+            <Col sm={3} className="text-sm-end">
+              <FormLabel htmlFor="wd-group" className="mt-1">
+                Assignment Group
+              </FormLabel>
+            </Col>
+            <Col sm={9}>
+              <FormSelect id="wd-group" defaultValue="Assignments">
+                <option value="Assignments">ASSIGNMENTS</option>
+              </FormSelect>
+            </Col>
+          </Row>
+          <Row className="g-3 align-items-start mb-3">
+            <Col sm={3} className="text-sm-end">
+              <FormLabel htmlFor="wd-display-grade-as" className="mt-1">
+                Display Grade as
+              </FormLabel>
+            </Col>
+            <Col sm={9}>
+              <FormSelect id="wd-display-grade-as" defaultValue="Percentage">
+                <option value="Percentage">Percentage</option>
+              </FormSelect>
+            </Col>
+          </Row>
+          <Row className="g-3 align-items-start mb-4">
+            <Col sm={3} className="text-sm-end">
+              <FormLabel htmlFor="wd-submission-types" className="mt-1">
+                Submission Type
+              </FormLabel>
+            </Col>
+            <Col sm={9}>
+              <FormSelect id="wd-submission-types" defaultValue="Online" className="mb-3">
+                <option value="Online">Online</option>
+              </FormSelect>
 
-        <div className="mb-4">
-          <FormLabel htmlFor="wd-description">Description</FormLabel>
-          <FormControl
-            as="textarea"
-            id="wd-description"
-            rows={6}
-            defaultValue={
-              "The assignment is available online Submit a link to the landing page of your Web application running on Netlify. The landing page should include the following: Your full name and section, links to each of the lab assignments, link to the Kambaz application, links to all relevant source code repositories, and a link to navigate back to the landing page."
-            }
-          />
-        </div>
+              <Card className="border rounded">
+                <CardBody className="p-3">
+                  <div className="fw-semibold mb-2">Online Entry Options</div>
+                  <FormCheck id="wd-text-entry" type="checkbox" label="Text Entry" />
+                  <FormCheck id="wd-website-url" type="checkbox" label="Website URL" />
+                  <FormCheck id="wd-media-recordings" type="checkbox" label="Media Recordings" />
+                  <FormCheck id="wd-student-annotation" type="checkbox" label="Student Annotation" />
+                  <FormCheck id="wd-file-upload" type="checkbox" label="File Uploads" />
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+          <Row className="g-3 align-items-start mb-3">
+            <Col sm={3} className="text-sm-end">
+              <FormLabel className="mt-1">Assign</FormLabel>
+            </Col>
+            <Col sm={9}>
+              <Form className="mb-3" id="wd-assign-to">
+                <FormLabel>Assign to</FormLabel>
+                <FormControl type="text" defaultValue="Everyone" />
+              </Form>
 
-        <div className="mb-3">
-          <FormLabel htmlFor="wd-points">Points</FormLabel>
-          <FormControl id="wd-points" type="number" defaultValue={100} />
-        </div>
+              <Form className="mb-3" id="wd-due-date">
+                <FormLabel>Due</FormLabel>
+                <FormControl type="date" defaultValue="2024-05-13" ref={dueRef} />
+              </Form>
 
-        <div className="mb-3">
-          <FormLabel htmlFor="wd-group">Assignment Group</FormLabel>
-          <FormSelect id="wd-group" defaultValue="ASSIGNMENTS">
-            <option value="ASSIGNMENTS">ASSIGNMENTS</option>
-            <option value="QUIZZES">QUIZZES</option>
-            <option value="PROJECTS">PROJECTS</option>
-          </FormSelect>
-        </div>
-
-        <div className="mb-4">
-          <FormLabel htmlFor="wd-display-grade-as">Display Grade as</FormLabel>
-          <FormSelect id="wd-display-grade-as" defaultValue="PERCENTAGE">
-            <option value="PERCENTAGE">Percentage</option>
-            <option value="POINTS">Points</option>
-            <option value="PASS_FAIL">Complete/Incomplete</option>
-          </FormSelect>
-        </div>
-
-        <div className="mb-4">
-          <FormLabel htmlFor="wd-submission-type">Submission Type</FormLabel>
-          <FormSelect id="wd-submission-type" defaultValue="ONLINE" className="mb-2">
-            <option value="ONLINE">Online</option>
-            <option value="ON_PAPER">On Paper</option>
-            <option value="NO_SUBMISSION">No Submission</option>
-          </FormSelect>
-
-          <div className="small text-muted mb-1">Online Entry Options</div>
-          <div className="d-grid gap-2">
-            <FormCheck type="checkbox" id="wd-text-entry" label="Text Entry" />
-            <FormCheck type="checkbox" id="wd-website-url" label="Website URL" />
-            <FormCheck type="checkbox" id="wd-media-recordings" label="Media Recordings" />
-            <FormCheck type="checkbox" id="wd-student-annotation" label="Student Annotation" />
-            <FormCheck type="checkbox" id="wd-file-upload" label="File Uploads" />
+              <Row className="g-3">
+                <Col md={6}>
+                  <Form id="wd-available-from">
+                    <FormLabel>Available from</FormLabel>
+                    <FormControl
+                      type="date"
+                      defaultValue="2024-05-06"
+                      ref={availableFromRef}
+                    />
+                  </Form>
+                </Col>
+                <Col md={6}>
+                  <Form id="wd-available-until">
+                    <FormLabel>Until</FormLabel>
+                    <FormControl
+                      type="date"
+                      defaultValue="2024-05-20"
+                      ref={availableUntilRef}
+                    />
+                  </Form>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <button onClick={handleCancel} className="btn btn-light">
+              Cancel
+            </button>
+            <button onClick={handleSave} className="btn btn-danger">
+              Save
+            </button>
           </div>
-        </div>
-
-        <div className="mb-4">
-          <FormLabel htmlFor="wd-assign-to">Assign to</FormLabel>
-          <FormControl id="wd-assign-to" defaultValue="Everyone" className="mb-3" />
-
-          <FormLabel htmlFor="wd-due-date">Due</FormLabel>
-          <FormControl id="wd-due-date" type="date" defaultValue="2024-05-13" className="mb-3" />
-
-          <div className="d-flex gap-3 flex-column flex-sm-row">
-            <div className="flex-fill">
-              <FormLabel htmlFor="wd-available-from">Available from</FormLabel>
-              <FormControl id="wd-available-from" type="date" defaultValue="2024-05-06" />
-            </div>
-            <div className="flex-fill">
-              <FormLabel htmlFor="wd-available-until">Until</FormLabel>
-              <FormControl id="wd-available-until" type="date" defaultValue="2024-05-20" />
-            </div>
-          </div>
-        </div>
-
-        <div className="d-flex justify-content-end gap-2 mt-4">
-          <Link href={`/Courses/${cid}/Assignments`} className="btn btn-light">
-            Cancel
-          </Link>
-          <Link href={`/Courses/${cid}/Assignments`} className="btn btn-danger">
-            Save
-          </Link>
-        </div>
-      </Form>
+        </CardBody>
+      </Card>
     </div>
   );
 }

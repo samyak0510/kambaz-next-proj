@@ -1,20 +1,13 @@
+"use client"
 import Link from "next/link";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
-
+import { useSelector } from "react-redux";
 export default function AccountNavigation() {
-  return (
-    <div id="wd-account-navigation" className="p-3" style={{ maxWidth: 200 }}>
-      <ListGroup className="rounded-0 list-group-flush">
-        <ListGroupItem className="border-0 rounded-0 border-start border-3 border-dark">
-          <Link href="Signin" className="text-decoration-none text-danger">Signin</Link>
-        </ListGroupItem>
-        <ListGroupItem className="border-0 rounded-0">
-          <Link href="Signup" className="text-decoration-none text-danger">Signup</Link>
-        </ListGroupItem>
-        <ListGroupItem className="border-0 rounded-0">
-          <Link href="Profile" className="text-decoration-none text-danger">Profile</Link>
-        </ListGroupItem>
-      </ListGroup>
-    </div>
-  );
-}
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const links = currentUser ? ["Profile"] : ["Signin", "Signup"];
+ return (
+   <div id="wd-account-navigation" className="wd list-group fs-5 rounded-0">
+    <Link href="/Account/Signin" className="list-group-item active border-0"> Signin </Link> <br />
+    <Link href="/Account/Signup" className="list-group-item text-danger border-0"> Signup </Link> <br />
+    <Link href="/Account/Profile" className="list-group-item text-danger border-0"> Profile </Link> <br />
+   </div>
+);}

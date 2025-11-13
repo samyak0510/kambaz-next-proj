@@ -1,8 +1,13 @@
+"use client";
 import { Button, Form, FormControl } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
+import { useParams, useRouter } from "next/navigation";
 
 export default function AssignmentControls() {
+  const { cid } = useParams();
+  const router = useRouter();
+
   return (
     <div
       id="wd-modules-controls"
@@ -32,6 +37,7 @@ export default function AssignmentControls() {
           size="lg"
           className="px-4"
           id="wd-add-assignment-btn"
+          onClick={() => router.push(`/Courses/${cid}/Assignments/new`)}
         >
           <FaPlus className="me-2 position-relative" style={{ bottom: "1px" }} />
           Assignment
