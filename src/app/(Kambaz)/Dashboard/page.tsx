@@ -38,7 +38,7 @@ export default function Dashboard() {
     number: "New Number",
     startDate: "2023-09-10",
     endDate: "2023-12-15",
-    image: "/images/pink.jpg",
+    image: "/images/teslabot.jpg",
     description: "New Description",
   });
 
@@ -141,7 +141,7 @@ export default function Dashboard() {
                   className="wd-dashboard-course-link text-decoration-none text-dark"
                 >
                   <CardImg
-                    src={course.image || "/images/pink.jpg"}
+                    src={course.image || "/images/teslabot.jpg"}
                     variant="top"
                     width="100%"
                     height={160}
