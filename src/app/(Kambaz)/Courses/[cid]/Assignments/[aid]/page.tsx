@@ -38,10 +38,6 @@ export default function AssignmentEditor() {
       (a: any) => a._id === aid && a.course === cid
     );
 
-  if (!isNew && !existingAssignment) {
-    return <div className="p-4 text-danger">Assignment not found.</div>;
-  }
-
   const [assignment, setAssignment] = useState({
     _id: isNew ? "" : existingAssignment?._id || "",
     title: existingAssignment?.title || "",
@@ -58,6 +54,10 @@ export default function AssignmentEditor() {
     availableFrom: existingAssignment?.availableFrom || "2024-05-06",
     availableUntil: existingAssignment?.availableUntil || "2024-05-20",
   });
+
+  if (!isNew && !existingAssignment) {
+    return <div className="p-4 text-danger">Assignment not found.</div>;
+  }
 
   const handleCancel = () => {
     router.push(`/Courses/${cid}/Assignments`);
