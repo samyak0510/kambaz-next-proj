@@ -2,7 +2,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { addAssignment, updateAssignment } from "../reducer";
-import * as db from "../../../../Database/"; 
+import * as db from "../../../../Database/";
 import {
   Form,
   Row,
@@ -21,27 +21,33 @@ export default function AssignmentEditor() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { assignments } = useSelector((state: any) => state.assignmentReducer);
-  const assignment = aid !== "new" ? assignments.find((a: any) => a._id === aid) : null;
-  if (aid !== "new" && !assignment) {
-    return <div className="p-4 text-danger">Assignment not found.</div>;
-  }
+
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const pointsRef = useRef<HTMLInputElement>(null);
   const dueRef = useRef<HTMLInputElement>(null);
   const availableFromRef = useRef<HTMLInputElement>(null);
   const availableUntilRef = useRef<HTMLInputElement>(null);
+
+  const assignment =
+    aid !== "new" ? assignments.find((a: any) => a._id === aid) : null;
+
+  if (aid !== "new" && !assignment) {
+    return <div className="p-4 text-danger">Assignment not found.</div>;
+  }
+
   const handleCancel = () => {
     router.push(`/Courses/${cid}/Assignments`);
   };
+
   const handleSave = () => {
     const title = nameRef.current?.value || "new assignment";
     dispatch(
       addAssignment({
-        title, 
-        cid
+        title,
+        cid,
       })
-    )
+    );
     router.push(`/Courses/${cid}/Assignments`);
   };
 
@@ -74,7 +80,12 @@ export default function AssignmentEditor() {
               </FormLabel>
             </Col>
             <Col sm={9}>
-              <FormControl id="wd-points" type="number" defaultValue={100} ref={pointsRef} />
+              <FormControl
+                id="wd-points"
+                type="number"
+                defaultValue={100}
+                ref={pointsRef}
+              />
             </Col>
           </Row>
           <Row className="g-3 align-items-start mb-3">
@@ -108,7 +119,11 @@ export default function AssignmentEditor() {
               </FormLabel>
             </Col>
             <Col sm={9}>
-              <FormSelect id="wd-submission-types" defaultValue="Online" className="mb-3">
+              <FormSelect
+                id="wd-submission-types"
+                defaultValue="Online"
+                className="mb-3"
+              >
                 <option value="Online">Online</option>
               </FormSelect>
 
@@ -117,8 +132,16 @@ export default function AssignmentEditor() {
                   <div className="fw-semibold mb-2">Online Entry Options</div>
                   <FormCheck id="wd-text-entry" type="checkbox" label="Text Entry" />
                   <FormCheck id="wd-website-url" type="checkbox" label="Website URL" />
-                  <FormCheck id="wd-media-recordings" type="checkbox" label="Media Recordings" />
-                  <FormCheck id="wd-student-annotation" type="checkbox" label="Student Annotation" />
+                  <FormCheck
+                    id="wd-media-recordings"
+                    type="checkbox"
+                    label="Media Recordings"
+                  />
+                  <FormCheck
+                    id="wd-student-annotation"
+                    type="checkbox"
+                    label="Student Annotation"
+                  />
                   <FormCheck id="wd-file-upload" type="checkbox" label="File Uploads" />
                 </CardBody>
               </Card>
@@ -136,7 +159,11 @@ export default function AssignmentEditor() {
 
               <Form className="mb-3" id="wd-due-date">
                 <FormLabel>Due</FormLabel>
-                <FormControl type="date" defaultValue="2024-05-13" ref={dueRef} />
+                <FormControl
+                  type="date"
+                  defaultValue="2024-05-13"
+                  ref={dueRef}
+                />
               </Form>
 
               <Row className="g-3">
