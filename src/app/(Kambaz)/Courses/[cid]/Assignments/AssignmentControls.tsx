@@ -3,10 +3,14 @@ import { Button, Form, FormControl } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { useParams, useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 export default function AssignmentControls() {
   const { cid } = useParams();
   const router = useRouter();
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const canEdit =
+    currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
 
   return (
     <div
@@ -20,6 +24,7 @@ export default function AssignmentControls() {
           placeholder="Search..."
           className="p-2"
           style={{ maxWidth: "300px" }}
+          id="wd-search-assignment"
         />
       </Form>
       <div className="d-flex">
@@ -27,21 +32,26 @@ export default function AssignmentControls() {
           variant="secondary"
           size="lg"
           className="me-2 px-4"
-          id="wd-add-module-btn"
+          id="wd-add-assignment-group"
         >
           <FaPlus className="me-2 position-relative" style={{ bottom: "1px" }} />
           Group
         </Button>
-        <Button
-          variant="danger"
-          size="lg"
-          className="px-4"
-          id="wd-add-assignment-btn"
-          onClick={() => router.push(`/Courses/${cid}/Assignments/new`)}
-        >
-          <FaPlus className="me-2 position-relative" style={{ bottom: "1px" }} />
-          Assignment
-        </Button>
+        {canEdit && (
+          <Button
+            variant="danger"
+            size="lg"
+            className="px-4"
+            id="wd-add-assignment"
+            onClick={() => router.push(`/Courses/${cid}/Assignments/new`)}
+          >
+            <FaPlus
+              className="me-2 position-relative"
+              style={{ bottom: "1px" }}
+            />
+            Assignment
+          </Button>
+        )}
       </div>
     </div>
   );

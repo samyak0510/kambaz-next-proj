@@ -1,13 +1,42 @@
-"use client"
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Nav, NavItem, NavLink } from "react-bootstrap";
 import { useSelector } from "react-redux";
+
 export default function AccountNavigation() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const links = currentUser ? ["Profile"] : ["Signin", "Signup"];
- return (
-   <div id="wd-account-navigation" className="wd list-group fs-5 rounded-0">
-    <Link href="/Account/Signin" className="list-group-item active border-0"> Signin </Link> <br />
-    <Link href="/Account/Signup" className="list-group-item text-danger border-0"> Signup </Link> <br />
-    <Link href="/Account/Profile" className="list-group-item text-danger border-0"> Profile </Link> <br />
-   </div>
-);}
+  const pathname = usePathname();
+
+  return (
+    <Nav variant="pills" className="flex-column">
+      {links.map((link) => {
+        const isActive = pathname.endsWith(link.toLowerCase());
+        return (
+          <NavItem key={link}>
+            <NavLink
+              as={Link}
+              href={link}
+              active={isActive}
+              className={`d-flex align-items-center fw-${isActive ? "bold" : "medium"} 
+                text-${isActive ? "dark" : "danger"} ps-2`}
+            >
+              {isActive && (
+                <span
+                  className="me-2 bg-dark"
+                  style={{
+                    width: "2px",
+                    height: "1.2em",
+                    display: "inline-block",
+                  }}
+                />
+              )}
+              {link}
+            </NavLink>
+          </NavItem>
+        );
+      })}
+    </Nav>
+  );
+}

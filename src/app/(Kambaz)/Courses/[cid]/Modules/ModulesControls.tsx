@@ -4,6 +4,7 @@ import GreenCheckmark from "./GreenCheckmark";
 import { MdDoNotDisturbAlt } from "react-icons/md";
 import ModuleEditor from "./ModuleEditor";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function ModulesControls({
     moduleName,
@@ -18,19 +19,25 @@ export default function ModulesControls({
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const canAddModule =
+        currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
+
     return (
         <div id="wd-modules-controls" className="text-nowrap clearfix">
             {/* Rightmost red "+ Module" button */}
-            <Button
-                variant="danger"
-                size="lg"
-                className="me-1 float-end"
-                id="wd-add-module-btn"
-                onClick={handleShow}
-            >
-                <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-                Module
-            </Button>
+            {canAddModule && (
+                <Button
+                    variant="danger"
+                    size="lg"
+                    className="me-1 float-end"
+                    id="wd-add-module-btn"
+                    onClick={handleShow}
+                >
+                    <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+                    Module
+                </Button>
+            )}
 
             {/* Publish All dropdown */}
             <Dropdown className="float-end me-2">

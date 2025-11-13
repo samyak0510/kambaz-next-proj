@@ -1,32 +1,38 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import * as db from "../../../Database";
 import ModulesControls from "./ModulesControls";
 import ModuleControlButtons from "./ModuleControlButtons";
 import LessonControlButtons from "./LessonControlButtons";
 import { FormControl, ListGroup, ListGroupItem } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
-import { v4 as uuidv4 } from "uuid";
-import { addModule, editModule, updateModule, deleteModule }
-  from "./reducer";
+import {
+  addModule,
+  editModule,
+  updateModule,
+  deleteModule,
+} from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
-import { ParamValue } from "next/dist/server/request/params";
 
 export default function Modules() {
   const { cid } = useParams();
   const [moduleName, setModuleName] = useState("");
   const { modules } = useSelector((state: any) => state.modulesReducer);
-  console.log(modules);
   const dispatch = useDispatch();
+
+  const handleAddModule = () => {
+    if (!moduleName.trim()) return;
+    dispatch(addModule({ name: moduleName, course: cid }));
+    setModuleName("");
+  };
+
   return (
     <div>
       <ModulesControls
-        moduleName={moduleName} setModuleName={setModuleName}
-        addModule={() => {
-          dispatch(addModule({ name: moduleName, course: cid }));
-          setModuleName("");
-        }} />
+        moduleName={moduleName}
+        setModuleName={setModuleName}
+        addModule={handleAddModule}
+      />
       <br />
       <br />
       <br />
@@ -45,11 +51,15 @@ export default function Modules() {
                   <FormControl
                     className="w-50 d-inline-block"
                     onChange={(e) =>
-                      dispatch(updateModule({ ...module, name: e.target.value }))
+                      dispatch(
+                        updateModule({ ...module, name: e.target.value })
+                      )
                     }
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        dispatch(updateModule({ ...module, editing: false }));
+                        dispatch(
+                          updateModule({ ...module, editing: false })
+                        );
                       }
                     }}
                     defaultValue={module.name}
@@ -60,7 +70,8 @@ export default function Modules() {
                   deleteModule={(moduleId) => {
                     dispatch(deleteModule(moduleId));
                   }}
-                  editModule={(moduleId) => dispatch(editModule(moduleId))} />
+                  editModule={(moduleId) => dispatch(editModule(moduleId))}
+                />
               </div>
               {module.lessons && (
                 <ListGroup className="wd-lessons rounded-0">
