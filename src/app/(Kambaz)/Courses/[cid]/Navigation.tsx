@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 
-export default function CourseNavigation() {
+type CourseNavigationProps = {
+  onNavigate?: () => void;
+};
+
+export default function CourseNavigation({ onNavigate }: CourseNavigationProps) {
   const { cid } = useParams<{ cid: string }>();
   const pathname = usePathname();
 
@@ -54,9 +58,10 @@ export default function CourseNavigation() {
             : "text-danger"
             }`}
           style={{
-            backgroundColor: "transparent", // removes the gray bg
-            border: "none",                 // removes the box border
+            backgroundColor: "transparent",
+            border: "none",
           }}
+          onClick={() => onNavigate?.()}
         >
           {link.label}
         </ListGroupItem>
