@@ -1,20 +1,22 @@
 "use client";
 import { Button } from "react-bootstrap";
-import { useSelector, useDispatch } from "react-redux";
-import { enrollInCourse, unenrollFromCourse } from "../Enrollments/reducer";
+import { useSelector } from "react-redux";
 
 export default function EnrollmentControls({
     courseId,
-    showAllCourses
+    showAllCourses,
+    onEnroll,
+    onUnenroll
 }: {
     courseId: string;
     showAllCourses: boolean;
+    onEnroll: (courseId: string) => void;
+    onUnenroll: (courseId: string) => void;
 }) {
-    const dispatch = useDispatch();
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
+    const { enrollments } = useSelector((state: any) => state.coursesReducer);
 
-    if (!currentUser || currentUser.role === "FACULTY") {
+    if (!currentUser || currentUser.role === "FACULTY" || currentUser.role === "ADMIN") {
         return null;
     }
 
@@ -22,14 +24,14 @@ export default function EnrollmentControls({
         (e: any) => e.user === currentUser._id && e.course === courseId
     );
 
-    const handleEnrollment = (event: React.MouseEvent) => {
+    const handleEnrollment = async (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
 
         if (isEnrolled) {
-            dispatch(unenrollFromCourse({ userId: currentUser._id, courseId }));
+            await onUnenroll(courseId);
         } else {
-            dispatch(enrollInCourse({ userId: currentUser._id, courseId }));
+            await onEnroll(courseId);
         }
     };
 

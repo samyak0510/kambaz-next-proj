@@ -1,46 +1,121 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  Row,
-  Col,
-  Card,
-  CardImg,
-  CardBody,
-  CardTitle,
-  CardText,
-  Button,
-  FormControl,
-} from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { redirect } from "next/navigation";
+import { setCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll } from "../Courses/reducer";
+import { v4 as uuidv4 } from 'uuid';
+import * as client from "../Courses/client";
 import {
-  addNewCourse,
-  updateCourse,
-  deleteCourse,
-} from "../Courses/reducer";
-import EnrollmentControls from "./EnrollmentControls";
+  Button,
+  Card,
+  CardBody,
+  CardImg,
+  CardText,
+  CardTitle,
+  Col,
+  Row,
+  FormControl,
+} from "react-bootstrap";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
 
+  const { courses, enrollments } = useSelector((state: any) => state.coursesReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const { courses } = useSelector((state: any) => state.reducer);
 
-  const enrollments =
-    useSelector((state: any) => state.enrollmentsReducer)?.enrollments ?? [];
-
-  const [showAllCourses, setShowAllCourses] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [course, setCourse] = useState<any>({
-    _id: "0",
+    _id: uuidv4(),
     name: "New Course",
     number: "New Number",
     startDate: "2023-09-10",
     endDate: "2023-12-15",
-    image: "/images/teslabot.jpg",
+    image: "/images/reactjs.jpg",
     description: "New Description",
   });
+
+  useEffect(() => {
+    const savedShowAll = sessionStorage.getItem('showAllCourses');
+    if (savedShowAll !== null) {
+      setShowAll(JSON.parse(savedShowAll));
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('showAllCourses', JSON.stringify(showAll));
+  }, [showAll]);
+
+  const fetchCourses = async () => {
+    try {
+      const fetchedCourses = await client.findMyCourses();
+      dispatch(setCourses(fetchedCourses));
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
+  const handleAddCourse = async () => {
+    try {
+      const newCourse = {
+        ...course,
+        _id: uuidv4(),
+        image: "/images/reactjs.jpg"
+      };
+
+      const newCourseData = await client.createCourse(newCourse);
+      dispatch(addCourse(newCourseData));
+      dispatch(enroll({ user: currentUser, course: newCourseData }));
+
+      setCourse({
+        _id: uuidv4(),
+        name: "New Course",
+        number: "New Number",
+        startDate: "2023-09-10",
+        endDate: "2023-12-15",
+        image: "/images/reactjs.jpg",
+        description: "New Description",
+      });
+
+      await fetchCourses();
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        console.error("Authentication error: Please sign in again");
+        redirect("/Account/Signin");
+      } else {
+        console.error("Error creating course:", error);
+        alert("Failed to create course. Please try again.");
+      }
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      await client.deleteCourse(courseId);
+      dispatch(deleteCourse(courseId));
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    }
+  };
+
+  const handleUpdateCourse = async () => {
+    try {
+      await client.updateCourse(course);
+      dispatch(updateCourse({ course }));
+    } catch (error) {
+      console.error("Error updating course:", error);
+    }
+  };
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchCourses();
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -52,58 +127,47 @@ export default function Dashboard() {
     return <div>Loading...</div>;
   }
 
-  const getVisibleCourses = () => {
-    if (showAllCourses) {
-      return courses;
-    }
-    if (currentUser.role === "FACULTY" || currentUser.role === "ADMIN") {
-      return courses;
-    }
-    return courses.filter((c: any) =>
+  const isAdminOrFaculty = currentUser.role === "FACULTY" || currentUser.role === "ADMIN";
+
+  const filteredCourses = showAll
+    ? courses
+    : courses.filter((course: any) =>
       enrollments.some(
-        (en: any) => en.user === currentUser._id && en.course === c._id
+        (enrollment: any) =>
+          enrollment.user === currentUser._id &&
+          enrollment.course === course._id
       )
     );
-  };
-
-  const visibleCourses = getVisibleCourses();
-  const canEditCourses =
-    currentUser.role === "FACULTY" || currentUser.role === "ADMIN";
 
   return (
     <div id="wd-dashboard" className="p-4">
-      <h1 id="wd-dashboard-title">Dashboard</h1>
-      <hr />
-
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 id="wd-dashboard-published">
-          {showAllCourses ? "All Courses" : "My Courses"} (
-          {visibleCourses.length})
-        </h2>
-        {currentUser.role === "STUDENT" && (
+      <h1 id="wd-dashboard-title">
+        Dashboard
+        {!isAdminOrFaculty && (
           <Button
-            variant="primary"
-            onClick={() => setShowAllCourses(!showAllCourses)}
+            className="float-end"
+            onClick={toggleShowAll}
           >
-            {showAllCourses ? "Show My Courses" : "Show All Courses"}
+            {showAll ? "Enrolled Courses" : "All Courses"}
           </Button>
         )}
-      </div>
+      </h1>
+      <hr />
 
-      {canEditCourses && (
+      {isAdminOrFaculty && (
         <>
           <h5>
             New Course
             <button
               className="btn btn-primary float-end"
               id="wd-add-new-course-click"
-              onClick={() => dispatch(addNewCourse(course))}
+              onClick={handleAddCourse}
             >
               Add
             </button>
             <button
               className="btn btn-warning float-end me-2"
-              onClick={() => dispatch(updateCourse(course))}
+              onClick={handleUpdateCourse}
               id="wd-update-course-click"
             >
               Update
@@ -113,83 +177,103 @@ export default function Dashboard() {
           <FormControl
             value={course.name}
             className="mb-2"
-            onChange={(e) =>
-              setCourse({ ...course, name: e.target.value })
-            }
+            onChange={(e) => setCourse({ ...course, name: e.target.value })}
           />
           <FormControl
             value={course.description}
-            onChange={(e) =>
-              setCourse({ ...course, description: e.target.value })
-            }
+            as="textarea"
+            rows={1}
+            onChange={(e) => setCourse({ ...course, description: e.target.value })}
           />
           <hr />
         </>
       )}
 
+      <h2 id="wd-dashboard-published">
+        Published Courses ({filteredCourses.length})
+      </h2>
+      <hr />
+
       <div id="wd-dashboard-courses">
-        <Row xs={1} sm={2} md={3} lg={4} className="g-4">
-          {visibleCourses.map((course: any) => (
-            <Col
-              key={course._id}
-              className="wd-dashboard-course"
-              style={{ width: "300px" }}
-            >
+        <Row xs={1} md={5} className="g-4">
+          {filteredCourses.map((course: any) => (
+            <Col key={course._id} className="wd-dashboard-course" style={{ width: "300px" }}>
               <Card>
                 <Link
                   href={`/Courses/${course._id}/Home`}
                   className="wd-dashboard-course-link text-decoration-none text-dark"
                 >
                   <CardImg
-                    src={course.image || "/images/teslabot.jpg"}
+                    src={course.image || "/images/reactjs.jpg"}
                     variant="top"
                     width="100%"
                     height={160}
                   />
                   <CardBody className="card-body">
-                    <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
+                    <CardTitle className="wd-dashboard-course-title card-title overflow-hidden text-nowrap">
                       {course.name}
                     </CardTitle>
                     <CardText
-                      className="wd-dashboard-course-description overflow-hidden"
-                      style={{ height: "100px" }}
+                      className="wd-dashboard-course-title card-text overflow-y-hidden"
+                      style={{ maxHeight: 50 }}
                     >
                       {course.description}
                     </CardText>
 
                     <div className="d-flex justify-content-between align-items-center">
-                      <button className="btn btn-primary">Go</button>
+                      <button className="btn btn-primary wd-go-button">Go</button>
 
-                      {canEditCourses && (
-                        <div>
-                          <button
+                      {isAdminOrFaculty && (
+                        <>
+                          <Button
                             onClick={(event) => {
                               event.preventDefault();
-                              dispatch(deleteCourse(course._id));
+                              handleDeleteCourse(course._id);
                             }}
-                            className="btn btn-danger"
+                            className="btn btn-danger wd-card-delete-button float-end"
                             id="wd-delete-course-click"
                           >
                             Delete
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             id="wd-edit-course-click"
                             onClick={(event) => {
                               event.preventDefault();
                               setCourse(course);
                             }}
-                            className="btn btn-warning ms-2"
+                            className="btn btn-warning me-2 wd-card-edit-button float-end"
                           >
                             Edit
-                          </button>
-                        </div>
+                          </Button>
+                        </>
+                      )}
+
+                      {!isAdminOrFaculty && (
+                        enrollments.some((enrollment: any) =>
+                          enrollment.user === currentUser._id && enrollment.course === course._id
+                        ) ? (
+                          <Button
+                            className="btn btn-danger wd-card-delete-button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              dispatch(unenroll({ user: currentUser, course }));
+                            }}
+                          >
+                            Unenroll
+                          </Button>
+                        ) : (
+                          <Button
+                            className="btn btn-success wd-card-delete-button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              dispatch(enroll({ user: currentUser, course }));
+                            }}
+                          >
+                            Enroll
+                          </Button>
+                        )
                       )}
                     </div>
-
-                    <EnrollmentControls
-                      courseId={course._id}
-                      showAllCourses={showAllCourses}
-                    />
                   </CardBody>
                 </Link>
               </Card>

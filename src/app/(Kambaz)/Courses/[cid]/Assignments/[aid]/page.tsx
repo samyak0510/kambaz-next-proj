@@ -1,7 +1,7 @@
 "use client";
-
 import {
   Form,
+  Button,
   Row,
   Col,
   Card,
@@ -10,41 +10,35 @@ import {
   FormSelect,
   FormCheck,
   CardBody,
+  FormGroup,
 } from "react-bootstrap";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
-import { addAssignment, updateAssignment } from "../reducer";
+import { useState, useEffect } from "react";
+import { setAssignments } from "../reducer";
+import * as client from "../../../client";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
 
-  const { assignments } = useSelector(
-    (state: any) => state.assignmentReducer
-  );
+  const assignments = useSelector((state: any) => state.assignmentReducer.assignments);
 
   const isNew = aid === "new";
   const editParam = searchParams.get("edit");
-  const [isEditMode, setIsEditMode] = useState(
-    isNew || editParam === "true"
-  );
+  const [isEditMode, setIsEditMode] = useState(isNew || editParam === "true");
 
-  const existingAssignment =
-    !isNew &&
-    assignments.find(
-      (a: any) => a._id === aid && a.course === cid
-    );
+  const existingAssignment = assignments.find(
+    (a: any) => a._id === aid && a.course === cid
+  );
 
   const [assignment, setAssignment] = useState({
     _id: isNew ? "" : existingAssignment?._id || "",
-    title: existingAssignment?.title || "",
+    title: existingAssignment?.title || "New Assignment",
     course: cid as string,
-    description:
-      existingAssignment?.description ||
-      "The assignment is available online. Submit a link to the landing page of your web application.",
+    description: existingAssignment?.description || "The assignment is available online. Submit a link to the landing page of your web application.",
     points: existingAssignment?.points ?? 100,
     group: existingAssignment?.group || "ASSIGNMENTS",
     displayGradeAs: existingAssignment?.displayGradeAs || "Percentage",
@@ -53,32 +47,70 @@ export default function AssignmentEditor() {
     dueDate: existingAssignment?.dueDate || "2024-05-13",
     availableFrom: existingAssignment?.availableFrom || "2024-05-06",
     availableUntil: existingAssignment?.availableUntil || "2024-05-20",
+    editorDueDate: existingAssignment?.editorDueDate || "",
+    editorAvailableFrom: existingAssignment?.editorAvailableFrom || "",
+    editorAvailableUntil: existingAssignment?.editorAvailableUntil || "",
   });
 
-  if (!isNew && !existingAssignment) {
-    return <div className="p-4 text-danger">Assignment not found.</div>;
-  }
+  const fetchAssignments = async () => {
+    try {
+      const fetchedAssignments = await client.findAssignmentsForCourse(cid as string);
+      dispatch(setAssignments(fetchedAssignments));
+
+      if (!isNew) {
+        const fetchedAssignment = fetchedAssignments.find((a: any) => a._id === aid);
+        if (fetchedAssignment) {
+          setAssignment({
+            ...fetchedAssignment,
+            editorDueDate: fetchedAssignment.editorDueDate || "",
+            editorAvailableFrom: fetchedAssignment.editorAvailableFrom || "",
+            editorAvailableUntil: fetchedAssignment.editorAvailableUntil || "",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [cid]);
+
+  const handleSave = async () => {
+    try {
+      const assignmentData = {
+        ...assignment,
+        title: assignment.title,
+        dueDate: assignment.editorDueDate ? `${assignment.editorDueDate} at 11:59pm` : assignment.dueDate,
+        availableFrom: assignment.editorAvailableFrom ? `${assignment.editorAvailableFrom} at 12:00am` : assignment.availableFrom,
+        availableUntil: assignment.editorAvailableUntil ? `${assignment.editorAvailableUntil} at 11:59pm` : assignment.availableUntil,
+      };
+
+      if (isNew) {
+        const newAssignment = await client.createAssignmentForCourse(cid as string, assignmentData);
+        dispatch(setAssignments([...assignments, newAssignment]));
+      } else {
+        const updatedAssignment = await client.updateAssignment(assignmentData);
+        dispatch(setAssignments(assignments.map((a: any) =>
+          a._id === updatedAssignment._id ? updatedAssignment : a
+        )));
+      }
+
+      router.push(`/Courses/${cid}/Assignments`);
+    } catch (error) {
+      console.error("Error saving assignment:", error);
+      alert("Failed to save assignment. Please try again.");
+    }
+  };
 
   const handleCancel = () => {
     router.push(`/Courses/${cid}/Assignments`);
   };
 
-  const handleSave = () => {
-    if (isNew) {
-      dispatch(
-        addAssignment({
-          ...assignment,
-        })
-      );
-    } else {
-      dispatch(
-        updateAssignment({
-          ...assignment,
-        })
-      );
-    }
-    router.push(`/Courses/${cid}/Assignments`);
-  };
+  if (!isNew && !existingAssignment) {
+    return <div className="p-4 text-danger">Assignment not found.</div>;
+  }
 
   return (
     <div id="wd-assignments-editor" className="container-fluid">
@@ -149,6 +181,9 @@ export default function AssignmentEditor() {
                 disabled={!isEditMode}
               >
                 <option value="ASSIGNMENTS">ASSIGNMENTS</option>
+                <option value="QUIZZES">QUIZZES</option>
+                <option value="EXAMS">EXAMS</option>
+                <option value="PROJECT">PROJECT</option>
               </FormSelect>
             </Col>
           </Row>
@@ -264,11 +299,11 @@ export default function AssignmentEditor() {
                 <FormLabel>Due</FormLabel>
                 <FormControl
                   type="date"
-                  value={assignment.dueDate}
+                  value={assignment.editorDueDate || assignment.dueDate}
                   onChange={(e) =>
                     setAssignment({
                       ...assignment,
-                      dueDate: e.target.value,
+                      editorDueDate: e.target.value,
                     })
                   }
                   disabled={!isEditMode}
@@ -281,11 +316,11 @@ export default function AssignmentEditor() {
                     <FormLabel>Available from</FormLabel>
                     <FormControl
                       type="date"
-                      value={assignment.availableFrom}
+                      value={assignment.editorAvailableFrom || assignment.availableFrom}
                       onChange={(e) =>
                         setAssignment({
                           ...assignment,
-                          availableFrom: e.target.value,
+                          editorAvailableFrom: e.target.value,
                         })
                       }
                       disabled={!isEditMode}
@@ -297,11 +332,11 @@ export default function AssignmentEditor() {
                     <FormLabel>Until</FormLabel>
                     <FormControl
                       type="date"
-                      value={assignment.availableUntil}
+                      value={assignment.editorAvailableUntil || assignment.availableUntil}
                       onChange={(e) =>
                         setAssignment({
                           ...assignment,
-                          availableUntil: e.target.value,
+                          editorAvailableUntil: e.target.value,
                         })
                       }
                       disabled={!isEditMode}
