@@ -12,7 +12,7 @@ import { Collapse } from "react-bootstrap";
 export default function CoursesLayout({ children }: { children: ReactNode }) {
   const { cid } = useParams<{ cid: string }>();
 
-  const { courses } = useSelector((state: any) => state.reducer);
+  const { courses } = useSelector((state: any) => state.coursesReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const { enrollments } = useSelector(
     (state: any) => state.enrollmentsReducer

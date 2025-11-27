@@ -31,7 +31,7 @@ export default function Dashboard() {
     number: "New Number",
     startDate: "2023-09-10",
     endDate: "2023-12-15",
-    image: "/images/reactjs.jpg",
+    image: "/images/reactjs.png",
     description: "New Description",
   });
 
@@ -73,7 +73,7 @@ export default function Dashboard() {
         number: "New Number",
         startDate: "2023-09-10",
         endDate: "2023-12-15",
-        image: "/images/reactjs.jpg",
+        image: "/images/teslabot.jpg",
         description: "New Description",
       });
 
@@ -204,7 +204,7 @@ export default function Dashboard() {
                   className="wd-dashboard-course-link text-decoration-none text-dark"
                 >
                   <CardImg
-                    src={course.image || "/images/reactjs.jpg"}
+                    src={course.image || "/images/reactjs.png"}
                     variant="top"
                     width="100%"
                     height={160}
