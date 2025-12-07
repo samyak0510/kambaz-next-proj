@@ -1,77 +1,54 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import { ReactNode, useState } from "react";
-import { FaAlignJustify } from "react-icons/fa";
+import { ReactNode, useState, useEffect } from "react";
 import CourseNavigation from "./Navigation";
-import Breadcrumb from "./BreadCrumb";
 import { useSelector } from "react-redux";
-import { useParams, redirect } from "next/navigation";
-import { Collapse } from "react-bootstrap";
-
+import { useParams } from "next/navigation";
+import { redirect } from "next/navigation";
+import { FaAlignJustify } from "react-icons/fa";
 
 export default function CoursesLayout({ children }: { children: ReactNode }) {
-  const { cid } = useParams<{ cid: string }>();
-
+  const { cid } = useParams();
   const { courses } = useSelector((state: any) => state.coursesReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const { enrollments } = useSelector(
-    (state: any) => state.enrollmentsReducer
-  );
+  const { enrollments } = useSelector((state: any) => state.coursesReducer);
 
   const course = courses.find((course: any) => course._id === cid);
   const [showNav, setShowNav] = useState(false);
 
+  // Check authentication
   if (!currentUser) {
     redirect("/Account/Signin");
   }
 
+  // Check authorization for students
   if (currentUser.role === "STUDENT") {
     const isEnrolled = enrollments.some(
       (e: any) => e.user === currentUser._id && e.course === cid
     );
+
     if (!isEnrolled) {
       redirect("/Dashboard");
     }
   }
 
+  // Faculty and Admin have access to all courses, so no check needed
+
   return (
-    <div>
-      <div id="wd-courses">
-        <h2 className="text-danger d-flex align-items-center">
-          <button
-            type="button"
-            className="btn btn-link text-danger p-0 me-3 d-md-none"
-            aria-label="Toggle course navigation"
-            aria-expanded={showNav}
-            onClick={() => setShowNav((prev) => !prev)}
-          >
-            <FaAlignJustify className="fs-4" />
-          </button>
-          <span className="d-none d-md-inline me-3">
-            <FaAlignJustify
-              className="fs-4"
-              role="button"
-              aria-hidden="true"
-            />
-          </span>
-          <Breadcrumb course={course} />
-          {course?.name}
-        </h2>
-        <hr />
-        <hr />
-        <div className="d-flex flex-column flex-md-row">
-          <div className="d-md-none w-100 mb-3">
-            <Collapse in={showNav}>
-              <div>
-                <CourseNavigation onNavigate={() => setShowNav(false)} />
-              </div>
-            </Collapse>
-          </div>
-          <div className="d-none d-md-block me-md-4" style={{ minWidth: 220 }}>
-            <CourseNavigation />
-          </div>
-          <div className="flex-fill">{children}</div>
+    <div id="wd-courses">
+      <h2>
+        <FaAlignJustify
+          className="me-4 fs-4 mb-1"
+          onClick={() => setShowNav(!showNav)}
+        />
+        {course?.name}
+      </h2>
+      <hr />
+      <div className="d-flex">
+        <div className={showNav ? "d-block d-md-block" : "d-none d-md-block"}>
+          <CourseNavigation />
         </div>
+        <div className="flex-fill">{children}</div>
       </div>
     </div>
   );

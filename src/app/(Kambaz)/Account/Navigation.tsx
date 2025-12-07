@@ -7,6 +7,9 @@ import { useSelector } from "react-redux";
 export default function AccountNavigation() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const links = currentUser ? ["Profile"] : ["Signin", "Signup"];
+  if (currentUser && currentUser.role === "ADMIN") {
+    links.push("Users");
+  }
   const pathname = usePathname();
 
   return (
@@ -17,7 +20,7 @@ export default function AccountNavigation() {
           <NavItem key={link}>
             <NavLink
               as={Link}
-              href={link}
+              href={`/Account/${link}`}
               active={isActive}
               className={`d-flex align-items-center fw-${isActive ? "bold" : "medium"} 
                 text-${isActive ? "dark" : "danger"} ps-2`}

@@ -1,3 +1,5 @@
+// app/(kambaz)/Courses/[cid]/Assignments/reducer.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 

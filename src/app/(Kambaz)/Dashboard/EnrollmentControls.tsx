@@ -1,3 +1,5 @@
+// app/(kambaz)/Dashboard/EnrollmentControls.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -14,10 +16,10 @@ export default function EnrollmentControls({
     onUnenroll: (courseId: string) => void;
 }) {
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    const { enrollments } = useSelector((state: any) => state.coursesReducer);
+    const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
 
-    if (!currentUser || currentUser.role === "FACULTY" || currentUser.role === "ADMIN") {
-        return null;
+    if (!currentUser || currentUser.role === "FACULTY") {
+        return null; // Faculty don't need enrollment buttons
     }
 
     const isEnrolled = enrollments.some(
@@ -35,7 +37,8 @@ export default function EnrollmentControls({
         }
     };
 
-    if (!showAllCourses && !isEnrolled) {
+    // Only show enrollment controls when viewing all courses
+    if (!showAllCourses) {
         return null;
     }
 

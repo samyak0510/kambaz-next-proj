@@ -1,50 +1,27 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+// app/(kambaz)/Courses/[cid]/Assignments/page.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
 import Link from "next/link";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  Button,
-  ListGroup,
-  ListGroupItem,
-  Modal,
-} from "react-bootstrap";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { IoEllipsisVertical } from "react-icons/io5";
-import { PiNotePencilBold } from "react-icons/pi";
-import { FaTrash, FaPencil } from "react-icons/fa6";
-import { BsPlus } from "react-icons/bs";
-import AssignmentControls from "./AssignmentControls";
-import LessonControlButtons from "../Modules/LessonControlButtons";
-import {
-  setAssignments,
-  deleteAssignment,
-} from "./reducer";
-import { FaCheckCircle } from "react-icons/fa";
+import { IoChevronDown } from "react-icons/io5";
+import { FaFileAlt } from "react-icons/fa";
+import { useParams, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
+import { setAssignments } from "./reducer";
 import * as client from "../../client";
+import AssignmentControlButtons from "./AssignmentControlButtons";
+import AssignmentControls from "./AssignmentControls";
+import GroupControlButtons from "./GroupControlButtons";
 
 export default function Assignments() {
   const { cid } = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { assignments } = useSelector(
-    (state: any) => state.assignmentReducer
-  );
-  const { currentUser } = useSelector(
-    (state: any) => state.accountReducer
-  );
-
-  const canEdit =
-    currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
-
-  const [showDelete, setShowDelete] = useState(false);
-  const [assignmentToDelete, setAssignmentToDelete] = useState<any>(null);
-
-  const courseAssignments = assignments.filter(
-    (assignment: any) => assignment.course === cid
-  );
+  const assignments = useSelector((state: any) => state.assignmentsReducer.assignments);
+  const courseAssignments = assignments.filter((amt: any) => amt.course === cid);
 
   const fetchAssignments = async () => {
     try {
@@ -59,27 +36,16 @@ export default function Assignments() {
     fetchAssignments();
   }, [cid]);
 
-  const handleAskDelete = (assignment: any) => {
-    setAssignmentToDelete(assignment);
-    setShowDelete(true);
-  };
-
-  const handleCancelDelete = () => {
-    setShowDelete(false);
-    setAssignmentToDelete(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (assignmentToDelete?._id) {
+  const handleDeleteAssignment = async (assignmentId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to remove this assignment?");
+    if (confirmDelete) {
       try {
-        await client.deleteAssignment(assignmentToDelete._id);
-        dispatch(deleteAssignment(assignmentToDelete._id));
+        await client.deleteAssignment(assignmentId);
+        dispatch(setAssignments(assignments.filter((a: any) => a._id !== assignmentId)));
       } catch (error) {
         console.error("Error deleting assignment:", error);
       }
     }
-    setShowDelete(false);
-    setAssignmentToDelete(null);
   };
 
   const handleEditAssignment = (assignmentId: string) => {
@@ -89,89 +55,60 @@ export default function Assignments() {
   return (
     <div id="wd-assignments">
       <AssignmentControls />
+      <br /><br /><br /><br />
 
-      <ListGroup className="rounded-0" id="wd-assignments">
-        <ListGroupItem className="wd-assignment p-0 mb-5 fs-5 border-gray">
-          <div className="wd-title p-3 ps-2 bg-secondary d-flex align-items-center">
-            <BsGripVertical className="me-2 fs-3" />
-            <IoMdArrowDropdown />
-            <span className="ms-1">ASSIGNMENTS</span>
+      <ListGroup className="rounded-0">
+        <ListGroupItem className="wd-assignment-group p-0 mb-0 fs-5 border-gray">
+          <div className="wd-assignment-header p-3 ps-2 bg-secondary d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <BsGripVertical className="me-2 fs-3" />
+              <IoChevronDown className="me-2" />
+              <span className="fw-bold">ASSIGNMENTS</span>
+            </div>
+            <div className="d-flex align-items-center">
+              <span className="wd-assignment-percentage me-3">40% of Total</span>
+              <GroupControlButtons />
+            </div>
           </div>
 
-          <ListGroup className="wd-assignment-list rounded-0">
-            {courseAssignments.map((assignment: any) => (
-              <ListGroupItem
-                key={assignment._id}
-                className="wd-assignment-list-item p-3 ps-1 d-flex align-items-start"
-              >
-                <div className="d-flex align-items-start gap-2">
-                  <BsGripVertical className="fs-3" />
-                  <PiNotePencilBold color="green" className="fs-3" />
-                  <div className="d-flex flex-column">
-                    <Link
-                      href={`/Courses/${cid}/Assignments/${assignment._id}`}
-                      className="wd-assignment-link text-decoration-none"
-                    >
-                      {assignment.title}
-                    </Link>
-                    <small className="text-muted">
-                      Assignment Weightage - 5%
-                    </small>
+          <ListGroup className="rounded-0">
+            {courseAssignments.map((crsAmt: any) => (
+              <ListGroupItem key={crsAmt._id} className="wd-assignment-item p-3 ps-1 d-flex align-items-start">
+                <BsGripVertical className="me-2 fs-3 mt-1" />
+                <FaFileAlt className="me-2 mt-1 text-success" />
+                <div className="flex-grow-1">
+                  <Link href={`/Courses/${crsAmt?.course}/Assignments/${crsAmt?._id}`} className="text-decoration-none">
+                    <strong className="text-dark">{crsAmt?._id}</strong>
+                  </Link>
+                  <div className="text-muted small mt-1">
+                    <span className="text-danger">Multiple Modules</span>
+                    <span className="mx-1">|</span>
+                    {crsAmt?.availableFrom && (
+                      <>
+                        <span><strong>Not available until</strong> {crsAmt.availableFrom}</span>
+                        <span className="mx-1">|</span>
+                      </>
+                    )}
+                    <br />
+                    {crsAmt?.dueDate && (
+                      <>
+                        <span><strong>Due</strong> {crsAmt.dueDate}</span>
+                        <span className="mx-1">|</span>
+                      </>
+                    )}
+                    <span>{crsAmt?.points || 100} pts</span>
                   </div>
                 </div>
-
-                <div className="d-flex align-items-center gap-2 ms-auto">
-                  <LessonControlButtons />
-                  {canEdit && (
-                    <>
-                      <FaPencil
-                        className="text-primary fs-5"
-                        onClick={() => handleEditAssignment(assignment._id)}
-                        role="button"
-                      />
-                      <Button
-                        variant="link"
-                        className="text-danger p-0"
-                        onClick={() => handleAskDelete(assignment)}
-                        aria-label={`Delete ${assignment.title}`}
-                      >
-                        <FaTrash className="fs-5" />
-                      </Button>
-                    </>
-                  )}
-                  <FaCheckCircle className="text-success" />
-                  <BsPlus className="fs-4" />
-                  <IoEllipsisVertical className="fs-4" />
-                </div>
+                <AssignmentControlButtons
+                  assignmentId={crsAmt._id}
+                  deleteAssignment={handleDeleteAssignment}
+                  editAssignment={handleEditAssignment}
+                />
               </ListGroupItem>
             ))}
           </ListGroup>
         </ListGroupItem>
       </ListGroup>
-
-      <Modal show={showDelete} onHide={handleCancelDelete} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Delete assignment</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {assignmentToDelete ? (
-            <>
-              Are you sure you want to delete{" "}
-              <strong>{assignmentToDelete.title}</strong>?
-            </>
-          ) : (
-            "Are you sure you want to delete this assignment?"
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCancelDelete}>
-            Cancel
-          </Button>
-          <Button variant="danger" onClick={handleConfirmDelete}>
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 }

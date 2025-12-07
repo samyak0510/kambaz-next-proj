@@ -1,17 +1,7 @@
-"use client";
-import {
-  Form,
-  Button,
-  Row,
-  Col,
-  Card,
-  FormLabel,
-  FormControl,
-  FormSelect,
-  FormCheck,
-  CardBody,
-  FormGroup,
-} from "react-bootstrap";
+// app/(kambaz)/Courses/[cid]/Assignments/[aid]/page.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
+import { Form, Button, Row, Col, Card, FormGroup } from "react-bootstrap";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
@@ -24,11 +14,17 @@ export default function AssignmentEditor() {
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
 
-  const assignments = useSelector((state: any) => state.assignmentReducer.assignments);
+  const assignments = useSelector((state: any) => state.assignmentsReducer.assignments);
+
+  // Get current user to check role
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const isFacultyOrAdmin = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
 
   const isNew = aid === "new";
   const editParam = searchParams.get("edit");
-  const [isEditMode, setIsEditMode] = useState(isNew || editParam === "true");
+
+  // Only allow edit mode for faculty/admin
+  const [isEditMode, setIsEditMode] = useState(isFacultyOrAdmin && (isNew || editParam === "true"));
 
   const existingAssignment = assignments.find(
     (a: any) => a._id === aid && a.course === cid
@@ -36,17 +32,17 @@ export default function AssignmentEditor() {
 
   const [assignment, setAssignment] = useState({
     _id: isNew ? "" : existingAssignment?._id || "",
-    title: existingAssignment?.title || "New Assignment",
+    title: existingAssignment?.title || existingAssignment?._id || "New Assignment",
     course: cid as string,
-    description: existingAssignment?.description || "The assignment is available online. Submit a link to the landing page of your web application.",
-    points: existingAssignment?.points ?? 100,
+    description: existingAssignment?.description || "Assignment Description",
+    points: existingAssignment?.points || 100,
     group: existingAssignment?.group || "ASSIGNMENTS",
     displayGradeAs: existingAssignment?.displayGradeAs || "Percentage",
     submissionType: existingAssignment?.submissionType || "Online",
     assignTo: existingAssignment?.assignTo || "Everyone",
-    dueDate: existingAssignment?.dueDate || "2024-05-13",
-    availableFrom: existingAssignment?.availableFrom || "2024-05-06",
-    availableUntil: existingAssignment?.availableUntil || "2024-05-20",
+    dueDate: existingAssignment?.dueDate || "",
+    availableFrom: existingAssignment?.availableFrom || "",
+    availableUntil: existingAssignment?.availableUntil || "",
     editorDueDate: existingAssignment?.editorDueDate || "",
     editorAvailableFrom: existingAssignment?.editorAvailableFrom || "",
     editorAvailableUntil: existingAssignment?.editorAvailableUntil || "",
@@ -62,6 +58,7 @@ export default function AssignmentEditor() {
         if (fetchedAssignment) {
           setAssignment({
             ...fetchedAssignment,
+            title: fetchedAssignment.title || fetchedAssignment._id,
             editorDueDate: fetchedAssignment.editorDueDate || "",
             editorAvailableFrom: fetchedAssignment.editorAvailableFrom || "",
             editorAvailableUntil: fetchedAssignment.editorAvailableUntil || "",
@@ -78,22 +75,28 @@ export default function AssignmentEditor() {
   }, [cid]);
 
   const handleSave = async () => {
+    // Additional check for security
+    if (!isFacultyOrAdmin) {
+      alert("You don't have permission to save assignments");
+      return;
+    }
+
     try {
       const assignmentData = {
         ...assignment,
-        title: assignment.title,
-        dueDate: assignment.editorDueDate ? `${assignment.editorDueDate} at 11:59pm` : assignment.dueDate,
-        availableFrom: assignment.editorAvailableFrom ? `${assignment.editorAvailableFrom} at 12:00am` : assignment.availableFrom,
-        availableUntil: assignment.editorAvailableUntil ? `${assignment.editorAvailableUntil} at 11:59pm` : assignment.availableUntil,
+        title: assignment.title || assignment._id,
+        dueDate: assignment.editorDueDate ? `${assignment.editorDueDate} at 11:59pm` : assignment.dueDate || "",
+        availableFrom: assignment.editorAvailableFrom ? `${assignment.editorAvailableFrom} at 12:00am` : assignment.availableFrom || "",
+        availableUntil: assignment.editorAvailableUntil ? `${assignment.editorAvailableUntil} at 11:59pm` : assignment.availableUntil || "",
       };
 
       if (isNew) {
         const newAssignment = await client.createAssignmentForCourse(cid as string, assignmentData);
         dispatch(setAssignments([...assignments, newAssignment]));
       } else {
-        const updatedAssignment = await client.updateAssignment(assignmentData);
+        await client.updateAssignment(assignmentData);
         dispatch(setAssignments(assignments.map((a: any) =>
-          a._id === updatedAssignment._id ? updatedAssignment : a
+          a._id === assignmentData._id ? assignmentData : a
         )));
       }
 
@@ -104,284 +107,257 @@ export default function AssignmentEditor() {
     }
   };
 
-  const handleCancel = () => {
-    router.push(`/Courses/${cid}/Assignments`);
-  };
-
-  if (!isNew && !existingAssignment) {
-    return <div className="p-4 text-danger">Assignment not found.</div>;
-  }
-
+  // [Rest of the form fields remain the same...]
   return (
-    <div id="wd-assignments-editor" className="container-fluid">
-      <Card className="border-0">
-        <CardBody className="p-4">
-          <Form className="mb-3" id="wd-name">
-            <FormLabel>Assignment Name</FormLabel>
-            <FormControl
+    <div id="wd-assignments-editor" className="container mt-4">
+      <Row className="mb-3">
+        <Col>
+          <FormGroup>
+            <Form.Label htmlFor="wd-name">Assignment Name</Form.Label>
+            <Form.Control
               type="text"
+              id="wd-name"
               value={assignment.title}
-              onChange={(e) =>
-                setAssignment({ ...assignment, title: e.target.value })
-              }
+              onChange={(e) => setAssignment({ ...assignment, title: e.target.value })}
+              size="lg"
               disabled={!isEditMode}
             />
-          </Form>
+          </FormGroup>
+        </Col>
+      </Row>
 
-          <Form className="mb-4" id="wd-description">
-            <FormControl
+      <Row className="mb-3">
+        <Col>
+          <Form.Group>
+            <Form.Control
               as="textarea"
-              rows={15}
+              id="wd-description"
+              rows={8}
               value={assignment.description}
-              onChange={(e) =>
-                setAssignment({
-                  ...assignment,
-                  description: e.target.value,
-                })
-              }
+              onChange={(e) => setAssignment({ ...assignment, description: e.target.value })}
               disabled={!isEditMode}
             />
-          </Form>
+          </Form.Group>
+        </Col>
+      </Row>
 
-          <Row className="g-3 align-items-start mb-3">
-            <Col sm={3} className="text-sm-end">
-              <FormLabel className="mt-1" htmlFor="wd-points">
-                Points
-              </FormLabel>
-            </Col>
-            <Col sm={9}>
-              <FormControl
-                id="wd-points"
-                type="number"
-                value={assignment.points}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    points: Number(e.target.value) || 0,
-                  })
-                }
+      <Row className="mb-3">
+        <Col md={3} className="text-md-end">
+          <Form.Label htmlFor="wd-points">Points</Form.Label>
+        </Col>
+        <Col md={9}>
+          <Form.Control
+            type="number"
+            id="wd-points"
+            value={assignment.points}
+            onChange={(e) => setAssignment({ ...assignment, points: parseInt(e.target.value) || 0 })}
+            disabled={!isEditMode}
+          />
+        </Col>
+      </Row>
+
+      <Row className="mb-3">
+        <Col md={3} className="text-md-end">
+          <Form.Label htmlFor="wd-group">Assignment Group</Form.Label>
+        </Col>
+        <Col md={9}>
+          <Form.Select
+            id="wd-group"
+            value={assignment.group}
+            onChange={(e) => setAssignment({ ...assignment, group: e.target.value })}
+            disabled={!isEditMode}
+          >
+            <option value="ASSIGNMENTS">ASSIGNMENTS</option>
+            <option value="QUIZZES">QUIZZES</option>
+            <option value="EXAMS">EXAMS</option>
+            <option value="PROJECT">PROJECT</option>
+          </Form.Select>
+        </Col>
+      </Row>
+
+      <Row className="mb-3">
+        <Col md={3} className="text-md-end">
+          <Form.Label htmlFor="wd-display-grade-as">Display Grade as</Form.Label>
+        </Col>
+        <Col md={9}>
+          <Form.Select
+            id="wd-display-grade-as"
+            value={assignment.displayGradeAs}
+            onChange={(e) => setAssignment({ ...assignment, displayGradeAs: e.target.value })}
+            disabled={!isEditMode}
+          >
+            <option>Percentage</option>
+            <option>Points</option>
+          </Form.Select>
+        </Col>
+      </Row>
+
+      <Row className="mb-3">
+        <Col md={3} className="text-md-end">
+          <Form.Label htmlFor="wd-submission-type">Submission Type</Form.Label>
+        </Col>
+        <Col md={9}>
+          <Card className="p-3">
+            <Form.Select
+              id="wd-submission-type"
+              className="mb-3"
+              value={assignment.submissionType}
+              onChange={(e) => setAssignment({ ...assignment, submissionType: e.target.value })}
+              disabled={!isEditMode}
+            >
+              <option>Online</option>
+              <option>On Paper</option>
+              <option>External Tool</option>
+            </Form.Select>
+
+            <div>
+              <Form.Label className="fw-bold">Online Entry Options</Form.Label>
+              <Form.Check
+                type="checkbox"
+                id="wd-text-entry"
+                label="Text Entry"
+                className="mb-2"
                 disabled={!isEditMode}
               />
-            </Col>
-          </Row>
-
-          <Row className="g-3 align-items-start mb-3">
-            <Col sm={3} className="text-sm-end">
-              <FormLabel htmlFor="wd-group" className="mt-1">
-                Assignment Group
-              </FormLabel>
-            </Col>
-            <Col sm={9}>
-              <FormSelect
-                id="wd-group"
-                value={assignment.group}
-                onChange={(e) =>
-                  setAssignment({ ...assignment, group: e.target.value })
-                }
+              <Form.Check
+                type="checkbox"
+                id="wd-website-url"
+                label="Website URL"
+                className="mb-2"
+                defaultChecked
                 disabled={!isEditMode}
-              >
-                <option value="ASSIGNMENTS">ASSIGNMENTS</option>
-                <option value="QUIZZES">QUIZZES</option>
-                <option value="EXAMS">EXAMS</option>
-                <option value="PROJECT">PROJECT</option>
-              </FormSelect>
-            </Col>
-          </Row>
-
-          <Row className="g-3 align-items-start mb-3">
-            <Col sm={3} className="text-sm-end">
-              <FormLabel htmlFor="wd-display-grade-as" className="mt-1">
-                Display Grade as
-              </FormLabel>
-            </Col>
-            <Col sm={9}>
-              <FormSelect
-                id="wd-display-grade-as"
-                value={assignment.displayGradeAs}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    displayGradeAs: e.target.value,
-                  })
-                }
+              />
+              <Form.Check
+                type="checkbox"
+                id="wd-media-recordings"
+                label="Media Recordings"
+                className="mb-2"
                 disabled={!isEditMode}
-              >
-                <option value="Percentage">Percentage</option>
-                <option value="Points">Points</option>
-              </FormSelect>
-            </Col>
-          </Row>
-
-          <Row className="g-3 align-items-start mb-4">
-            <Col sm={3} className="text-sm-end">
-              <FormLabel htmlFor="wd-submission-types" className="mt-1">
-                Submission Type
-              </FormLabel>
-            </Col>
-            <Col sm={9}>
-              <FormSelect
-                id="wd-submission-types"
-                className="mb-3"
-                value={assignment.submissionType}
-                onChange={(e) =>
-                  setAssignment({
-                    ...assignment,
-                    submissionType: e.target.value,
-                  })
-                }
+              />
+              <Form.Check
+                type="checkbox"
+                id="wd-student-annotation"
+                label="Student Annotation"
+                className="mb-2"
                 disabled={!isEditMode}
+              />
+              <Form.Check
+                type="checkbox"
+                id="wd-file-upload"
+                label="File Uploads"
+                disabled={!isEditMode}
+              />
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row className="mb-3">
+        <Col md={3} className="text-md-end">
+          <Form.Label>Assign</Form.Label>
+        </Col>
+        <Col md={9}>
+          <Card className="p-3">
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="wd-assign-to">Assign to</Form.Label>
+              <div className="wd-assign-to-container">
+                <span className="wd-assign-tag">Everyone <button className="wd-remove-tag" disabled={!isEditMode}>×</button></span>
+              </div>
+            </Form.Group>
+
+            <Row>
+              <Col>
+                <Form.Group>
+                  <Form.Label htmlFor="wd-due-date">Due</Form.Label>
+                  <Form.Control
+                    type="datetime-local"
+                    id="wd-due-date"
+                    value={assignment.editorDueDate ? `${assignment.editorDueDate}T23:59` : ""}
+                    onChange={(e) => setAssignment({ ...assignment, editorDueDate: e.target.value.split('T')[0] })}
+                    disabled={!isEditMode}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row className="mt-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label htmlFor="wd-available-from">Available From</Form.Label>
+                  <Form.Control
+                    type="datetime-local"
+                    id="wd-available-from"
+                    value={assignment.editorAvailableFrom ? `${assignment.editorAvailableFrom}T00:00` : ""}
+                    onChange={(e) => setAssignment({ ...assignment, editorAvailableFrom: e.target.value.split('T')[0] })}
+                    disabled={!isEditMode}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label htmlFor="wd-available-until">Until</Form.Label>
+                  <Form.Control
+                    type="datetime-local"
+                    id="wd-available-until"
+                    value={assignment.editorAvailableUntil ? `${assignment.editorAvailableUntil}T23:59` : ""}
+                    onChange={(e) => setAssignment({ ...assignment, editorAvailableUntil: e.target.value.split('T')[0] })}
+                    disabled={!isEditMode}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+      </Row>
+
+      <hr />
+
+      {/* Only show buttons for Faculty/Admin */}
+      {isFacultyOrAdmin ? (
+        <div className="d-flex justify-content-end gap-2 mb-4">
+          {isEditMode ? (
+            <>
+              <Button
+                variant="secondary"
+                onClick={handleSave}
               >
-                <option value="Online">Online</option>
-                <option value="On Paper">On Paper</option>
-                <option value="External Tool">External Tool</option>
-              </FormSelect>
-
-              <Card className="border rounded">
-                <CardBody className="p-3">
-                  <div className="fw-semibold mb-2">Online Entry Options</div>
-                  <FormCheck
-                    id="wd-text-entry"
-                    type="checkbox"
-                    label="Text Entry"
-                    disabled={!isEditMode}
-                  />
-                  <FormCheck
-                    id="wd-website-url"
-                    type="checkbox"
-                    label="Website URL"
-                    disabled={!isEditMode}
-                    defaultChecked
-                  />
-                  <FormCheck
-                    id="wd-media-recordings"
-                    type="checkbox"
-                    label="Media Recordings"
-                    disabled={!isEditMode}
-                  />
-                  <FormCheck
-                    id="wd-student-annotation"
-                    type="checkbox"
-                    label="Student Annotation"
-                    disabled={!isEditMode}
-                  />
-                  <FormCheck
-                    id="wd-file-upload"
-                    type="checkbox"
-                    label="File Uploads"
-                    disabled={!isEditMode}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-
-          <Row className="g-3 align-items-start mb-3">
-            <Col sm={3} className="text-sm-end">
-              <FormLabel className="mt-1">Assign</FormLabel>
-            </Col>
-            <Col sm={9}>
-              <Form className="mb-3" id="wd-assign-to">
-                <FormLabel>Assign to</FormLabel>
-                <FormControl
-                  type="text"
-                  value={assignment.assignTo}
-                  onChange={(e) =>
-                    setAssignment({
-                      ...assignment,
-                      assignTo: e.target.value,
-                    })
-                  }
-                  disabled={!isEditMode}
-                />
-              </Form>
-
-              <Form className="mb-3" id="wd-due-date">
-                <FormLabel>Due</FormLabel>
-                <FormControl
-                  type="date"
-                  value={assignment.editorDueDate || assignment.dueDate}
-                  onChange={(e) =>
-                    setAssignment({
-                      ...assignment,
-                      editorDueDate: e.target.value,
-                    })
-                  }
-                  disabled={!isEditMode}
-                />
-              </Form>
-
-              <Row className="g-3">
-                <Col md={6}>
-                  <Form id="wd-available-from">
-                    <FormLabel>Available from</FormLabel>
-                    <FormControl
-                      type="date"
-                      value={assignment.editorAvailableFrom || assignment.availableFrom}
-                      onChange={(e) =>
-                        setAssignment({
-                          ...assignment,
-                          editorAvailableFrom: e.target.value,
-                        })
-                      }
-                      disabled={!isEditMode}
-                    />
-                  </Form>
-                </Col>
-                <Col md={6}>
-                  <Form id="wd-available-until">
-                    <FormLabel>Until</FormLabel>
-                    <FormControl
-                      type="date"
-                      value={assignment.editorAvailableUntil || assignment.availableUntil}
-                      onChange={(e) =>
-                        setAssignment({
-                          ...assignment,
-                          editorAvailableUntil: e.target.value,
-                        })
-                      }
-                      disabled={!isEditMode}
-                    />
-                  </Form>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <div className="d-flex justify-content-end gap-2 mt-4">
-            {isEditMode ? (
-              <>
-                <button
-                  onClick={handleSave}
-                  className="btn btn-danger"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="btn btn-light"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsEditMode(true)}
-                  className="btn btn-primary"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="btn btn-secondary"
-                >
-                  Done
-                </button>
-              </>
-            )}
-          </div>
-        </CardBody>
-      </Card>
+                Save
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => router.push(`/Courses/${cid}/Assignments`)}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="primary"
+                onClick={() => setIsEditMode(true)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => router.push(`/Courses/${cid}/Assignments`)}
+              >
+                Done
+              </Button>
+            </>
+          )}
+        </div>
+      ) : (
+        // Students only see a Back button
+        <div className="d-flex justify-content-end mb-4">
+          <Button
+            variant="secondary"
+            onClick={() => router.push(`/Courses/${cid}/Assignments`)}
+          >
+            Back to Assignments
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
