@@ -1,6 +1,6 @@
 /* eslint-disable */
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import {
@@ -11,6 +11,66 @@ import {
 } from "../../../client";
 import Details from "./Details";
 import QuestionsTab from "./Questions";
+
+// Fisher-Yates shuffle algorithm for randomizing questions
+const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+};
+
+// Timer component for quiz countdown
+const QuizTimer = ({ timeLimit, onTimeUp }: { timeLimit: number; onTimeUp: () => void }) => {
+    const [timeRemaining, setTimeRemaining] = useState(timeLimit * 60); // Convert minutes to seconds
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        timerRef.current = setInterval(() => {
+            setTimeRemaining((prev) => {
+                if (prev <= 1) {
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    onTimeUp();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [onTimeUp]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const isLowTime = timeRemaining < 60; // Less than 1 minute
+    const isCriticalTime = timeRemaining < 30; // Less than 30 seconds
+
+    return (
+        <div
+            className={`d-flex align-items-center gap-2 px-3 py-2 rounded-pill ${isCriticalTime ? 'bg-danger text-white' :
+                    isLowTime ? 'bg-warning text-dark' :
+                        'bg-dark text-white'
+                }`}
+            style={{
+                fontFamily: 'monospace',
+                fontSize: '1.1rem',
+                fontWeight: 'bold',
+                animation: isCriticalTime ? 'pulse 1s infinite' : 'none'
+            }}
+        >
+            <i className={`bi bi-clock${isCriticalTime ? '-history' : ''}`}></i>
+            <span>{formatTime(timeRemaining)}</span>
+        </div>
+    );
+};
 
 export default function QuizEditor() {
     const { cid, qid } = useParams();
@@ -25,6 +85,7 @@ export default function QuizEditor() {
     const [questions, setQuestions] = useState<any[]>([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState<any>({});
+    const [isTimedOut, setIsTimedOut] = useState(false);
 
     const load = async () => {
         if (qid) {
@@ -34,7 +95,14 @@ export default function QuizEditor() {
 
                 if (currentUser?.role === "STUDENT") {
                     const qData = await findQuestionsForQuiz(qid as string);
-                    setQuestions(qData.filter((q: any) => q.title !== "__METADATA__"));
+                    let filteredQuestions = qData.filter((q: any) => q.title !== "__METADATA__");
+
+                    // Shuffle questions if shuffle_answers is true
+                    if (data.shuffle_answers) {
+                        filteredQuestions = shuffleArray(filteredQuestions);
+                    }
+
+                    setQuestions(filteredQuestions);
                 }
             } catch (error: any) {
                 if (error.response && error.response.status === 403) {
@@ -55,6 +123,13 @@ export default function QuizEditor() {
         router.push(`/Courses/${cid}/Quizzes`);
     };
     const cancel = () => router.push(`/Courses/${cid}/Quizzes`);
+
+    // Handle time up
+    const handleTimeUp = useCallback(() => {
+        setIsTimedOut(true);
+        alert("Time's up! Your quiz will be submitted automatically.");
+        router.push(`/Courses/${cid}/Quizzes`);
+    }, [cid, router]);
 
     if (!quiz) return <div>Loading…</div>;
     if (quiz.locked) {
@@ -86,10 +161,17 @@ export default function QuizEditor() {
 
         return (
             <div className="container mt-4" style={{ maxWidth: "800px" }}>
+                {/* Header with Timer */}
                 <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <h3>{quiz.title}</h3>
-                    <div className="text-muted">
-                        <strong>Question {currentQuestion + 1}</strong> of {questions.length}
+                    <div className="d-flex align-items-center gap-3">
+                        {/* Timer - only show if time_limit is set */}
+                        {quiz.time_limit && quiz.time_limit > 0 && (
+                            <QuizTimer timeLimit={quiz.time_limit} onTimeUp={handleTimeUp} />
+                        )}
+                        <div className="text-muted">
+                            <strong>Question {currentQuestion + 1}</strong> of {questions.length}
+                        </div>
                     </div>
                 </div>
 
@@ -180,21 +262,31 @@ export default function QuizEditor() {
                 )}
 
                 {/* Navigation Buttons */}
-                <div className="d-flex justify-content-between align-items-center mb-5">
+                <div className="d-flex justify-content-between align-items-center mb-3">
                     <button className="btn btn-light border" disabled={currentQuestion === 0}
                         onClick={() => setCurrentQuestion(currentQuestion - 1)}>
                         Previous
                     </button>
 
-                    {currentQuestion < questions.length - 1 ? (
-                        <button className="btn btn-light border" onClick={() => setCurrentQuestion(currentQuestion + 1)}>
-                            Next
-                        </button>
-                    ) : (
-                        <button className="btn btn-success px-4" onClick={submitQuiz}>
-                            Submit Quiz
-                        </button>
-                    )}
+                    <button className="btn btn-light border" disabled={currentQuestion >= questions.length - 1}
+                        onClick={() => setCurrentQuestion(currentQuestion + 1)}>
+                        Next
+                    </button>
+                </div>
+
+                {/* Always Visible Submit Quiz Button */}
+                <div className="d-grid mb-5">
+                    <button
+                        className="btn btn-success btn-lg py-3"
+                        onClick={submitQuiz}
+                        style={{
+                            boxShadow: '0 4px 12px rgba(40, 167, 69, 0.3)',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <i className="bi bi-check-circle me-2"></i>
+                        Submit Quiz
+                    </button>
                 </div>
             </div>
         );
