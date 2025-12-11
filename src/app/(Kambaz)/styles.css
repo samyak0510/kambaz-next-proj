@@ -1,0 +1,72 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body * {
+  font-family: Arial,
+    Helvetica, sans-serif;
+}
+
+@media (min-width: 768px) {
+  #wd-kambaz .wd-main-content-offset {
+    padding-left: 140px !important;
+  }
+}
+
+.list-group.wd>.list-group-item.active {
+  color: black;
+  background-color: white;
+  border-left: 3px solid black !important;
+}
+
+.btn-secondary {
+  --bs-btn-color: #000 !important;
+  --bs-btn-bg: #c7cdd1 !important;
+  --bs-btn-border-color: #c7cdd1 !important;
+  --bs-btn-hover-color: #fff !important;
+}
+
+.bg-secondary {
+  --bs-secondary-rgb: 199, 205, 209;
+}
+
+.list-group-item {
+  --bs-list-group-border-color: gray;
+}
+
+.wd-content .wd-content-item {
+  font-weight: 400;
+  /* inner lines normal */
+}
+
+.wd-lesson {
+  border-left: 3px solid green !important;
+  margin: 0 !important;
+  /* remove any outer margin */
+  padding: 0.5rem 0 0.5rem 0 !important;
+  font-weight: 600;
+}
+
+
+/* === Inner List === */
+.wd-content.list-group-flush {
+  margin-left: 3.25rem !important;
+  /* more indentation/tab spacing */
+  margin-top: 0.4rem !important;
+}
+
+/* Inner Items — flat lines */
+.wd-content.list-group-flush>.list-group-item {
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid #dee2e6 !important;
+  padding: 0.5rem 0 !important;
+  /* thinner vertical padding */
+  font-weight: 400;
+}
+
+/* No top line before first item */
+.wd-content.list-group-flush>.list-group-item:first-child {
+  border-top: 0 !important;
+}
