@@ -7,9 +7,9 @@ export default function Lab1() {
             <h2>Lab 1</h2>
             <section id="wd-lab1-landing" style={{ marginBottom: 24 }}>
                 <h3>CS5610 Lab 1 - Landing</h3>
-                <p><strong>Name:</strong> Samyak Shah</p>
-                <p><strong>NUID:</strong> 002051486</p>
-                <p><strong>Section:</strong> CS5610</p>
+                <p><strong>Name:</strong> Samyak Shah - Grad - section 4 </p>
+                <p><strong>Name:</strong> Venu Dave - Grad - section 4 </p>
+                <p><strong>Name:</strong> Rushikesh Pawar - Grad - section 4 </p>
                 <div>
                     <h4>Lab Assignments</h4>
                     <ul>
@@ -26,7 +26,8 @@ export default function Lab1() {
                     <h4>Links</h4>
                     <ul>
                         <li><Link href="/Dashboard">Kambaz Application</Link></li>
-                        <li><a href="https://github.com/samyak0510/kambaz-next-js" target="_blank" rel="noopener noreferrer">Source Code Repository</a></li>
+                        <li><a href="https://github.com/samyak0510/kambaz-next-proj" target="_blank" rel="noopener noreferrer">Source Code Repository of Front End</a></li>
+                        <li><a href="https://github.com/samyak0510/kambaz-node-proj" target="_blank" rel="noopener noreferrer">Source Code Repository of Server</a></li>
                     </ul>
                 </div>
             </section>
