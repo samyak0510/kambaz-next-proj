@@ -7,9 +7,10 @@ export default function Lab1() {
             <h2>Lab 1</h2>
             <section id="wd-lab1-landing" style={{ marginBottom: 24 }}>
                 <h3>CS5610 Lab 1 - Landing</h3>
-                <p><strong>Name:</strong> Samyak Shah - Grad - section 4 </p>
-                <p><strong>Name:</strong> Venu Dave - Grad - section 4 </p>
-                <p><strong>Name:</strong> Rushikesh Pawar - Grad - section 4 </p>
+                <p><strong>Team Members Names:</strong> </p>
+                <p> Samyak Shah - Grad - section 4 </p>
+                <p> Venu Dave - Grad - section 4 </p>
+                <p> Rushikesh Pawar - Grad - section 4 </p>
                 <div>
                     <h4>Lab Assignments</h4>
                     <ul>
